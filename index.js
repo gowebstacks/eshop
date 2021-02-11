@@ -76,18 +76,19 @@ const playground = async () => {
 // playground()
 
 app.post('/click_funnels', async (req, res) => {
-    const oldTokenData = await getCredential()
-    const oldRefreshToken = oldTokenData[0].refresh_token
-    const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
-    const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
-    const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
-    console.log("REFRESH TOKEN  :)   ", resData);
-    const access_token = resData.data.access_token
-    const refresh_token = resData.data.refresh_token
-    await updateCredential(cred[0]._id, {
-        access_token,
-        refresh_token
-    })
+    console.log("PAYLOAD", req.body);
+    // const oldTokenData = await getCredential()
+    // const oldRefreshToken = oldTokenData[0].refresh_token
+    // const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
+    // const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
+    // const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
+    // console.log("REFRESH TOKEN  :)   ", resData);
+    // const access_token = resData.data.access_token
+    // const refresh_token = resData.data.refresh_token
+    // await updateCredential(cred[0]._id, {
+    //     access_token,
+    //     refresh_token
+    // })
 
 
     // const purchase = req.body.purchase
@@ -106,6 +107,11 @@ app.post('/click_funnels', async (req, res) => {
     //         console.log("ERROR", e);
     //     }
     // }
+    res.status(200).send()
+})
+
+app.post('/funnel_webhooks/test', async (req, res) => {
+    console.log(req);
     res.status(200).send()
 })
 
