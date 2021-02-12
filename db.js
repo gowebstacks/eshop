@@ -3,7 +3,6 @@ const Credential = require('./credential.model')
 const getCredential = async () => {
     try {
         const cred = await Credential.find({})
-        console.log(cred);
         return cred
     } catch (e) {
         console.log(e);
