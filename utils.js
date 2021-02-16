@@ -1,5 +1,6 @@
 const axios = require('axios');
 require('dotenv').config()
+const { getCredential, addCredential, updateCredential } = require('./db')
 
 const getContacts = async (token, contacts, email, next) => {
     try {
@@ -19,22 +20,39 @@ const getContacts = async (token, contacts, email, next) => {
                 }
             }
         }
-        // console.log(res.data);
-        // console.log(res.data.contacts[0]);
         return
     } catch (e) {
         console.log(e);
     }
 }
+
 const getContact = async (token, email) => {
     try {
-        const res = await axios.get(`https://api.infusionsoft.com/crm/rest/v1/contacts?email=${email}`, {
+        const res = await axios.get(`https://api.infusionsoft.com/crm/rest/v1/contacts?email=${email}&custom_fields`, {
             headers: {
                 'Authorization': `Bearer ${token}`, 'Accept': "application/json, */*"
             }
         })
-        // console.log(res.data);
-        // console.log(res.data.contacts[0]);
+        if (res.data && res.data.contacts && res.data.contacts.length > 0) {
+            return res.data.contacts[0].id
+        } else {
+            return res.data
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+const newGetContact = async (token, userId) => {
+    try {
+        const reqBody = {
+            optional_properties: ['custom_fields']
+        }
+        const res = await axios.get(`https://api.infusionsoft.com/crm/rest/v1/contacts/${userId}?optional_properties=custom_fields`, {
+            headers: {
+                'Authorization': `Bearer ${token}`, 'Accept': "application/json, */*"
+            }
+        })
         return res.data
     } catch (e) {
         console.log(e);
@@ -47,13 +65,47 @@ const getContactModel = async (token) => {
                 'Authorization': `Bearer ${token}`, 'Accept': "application/json, */*"
             }
         })
-        // console.log(res.data);
-        // console.log(res.data.contacts[0]);
+        console.log(res.data);
         return res.data
     } catch (e) {
         console.log(e);
     }
 }
+
+const createCustomField = async (token) => {
+    const reqBody = {
+        "field_type": "Text",
+        "label": "Access Code",
+    }
+    const res = await axios.post(`https://api.infusionsoft.com/crm/rest/v1/contacts/model/customFields`, reqBody, {
+        headers: {
+            'Authorization': `Bearer ${token}`, 'Accept': "application/json, */*"
+        }
+    })
+    console.log("RESPONSe", res.data);
+}
+
+const updateContact = async (token, contactId, password) => {
+    try {
+        const reqBody = {
+            "custom_fields": [
+                {
+                    "content": password,
+                    "id": 39
+                }
+            ],
+        }
+        const res = await axios.patch(`https://api.infusionsoft.com/crm/rest/v1/contacts/${contactId}`, reqBody, {
+            headers: {
+                'Authorization': `Bearer ${token}`, 'Accept': "application/json, */*"
+            }
+        })
+        console.log("SUCCESSFULLY UPDATED CONTACT");
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 const playground = async () => {
     try {
         const oldTokenData = await getCredential()
@@ -63,18 +115,22 @@ const playground = async () => {
         const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
         const access_token = resData.data.access_token
         const refresh_token = resData.data.refresh_token
+        console.log("access token", access_token, '\n', "refresh token", refresh_token);
         await updateCredential(oldTokenData[0]._id, {
             access_token,
             refresh_token
         })
-        setTimeout(async () => {
-            const contact = await getContact(access_token, 'starlove00168@gmail.com')
-            // const contact = await getContactModel(access_token)
-            console.log("FOUND", contact);
-            if (contact && contact.length > 0) {
-                postUrl = `https://api.infusionsoft.com/crm/xmlrpc/v1?access_token=`
-            }
-        }, 10000)
+        // await updateContact(access_token, '584145')
+        // const cont = await newGetContact(access_token, '584145')
+        const contactId = await getContact(access_token, 'testperson@gmail.com')
+        console.log("CONT", contactId);
+        // setTimeout(async () => {
+        //     const contact = await getContact(access_token, 'starlove00168@gmail.com')
+        //     console.log("FOUND", contact);
+        //     if (contact && contact.length > 0) {
+        //         postUrl = `https://api.infusionsoft.com/crm/xmlrpc/v1?access_token=`
+        //     }
+        // }, 10000)
     } catch (e) {
         console.log(e);
     }
@@ -82,4 +138,4 @@ const playground = async () => {
 
 // playground()
 
-module.exports = {getContact}
+module.exports = { getContact, getContactModel, updateContact }
