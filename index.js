@@ -42,8 +42,8 @@ app.get('/callback', async (req, res) => {
         const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'content-type': 'application/x-www-form-urlencoded' } })
         const access_token = resData.data.access_token
         const refresh_token = resData.data.refresh_token
-        console.log("ACCESS", access_token);
-        console.log("REFRESH", refresh_token);
+        // console.log("ACCESS", access_token);
+        // console.log("REFRESH", refresh_token);
         const cred = await getCredential()
         if (cred.length > 0) {
             await updateCredential(cred[0]._id, {
@@ -141,33 +141,3 @@ app.post('/funnel_webhooks/test', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 })
-
-const playground = async () => {
-    try {
-        const oldTokenData = await getCredential()
-        const oldRefreshToken = 'NFJvmAvikO9P9VGCGRon2VnGk912AdXS'
-        // const oldRefreshToken = oldTokenData[0].refresh_token
-        const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
-        const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
-        const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
-        const access_token = resData.data.access_token
-        const refresh_token = resData.data.refresh_token
-        console.log("access token", access_token, '\n', "refresh token", refresh_token);
-        await updateCredential(oldTokenData[0]._id, {
-            access_token,
-            refresh_token
-        })
-        //         getContactModel('rXOhlAvwVP26VmaKMl6bAo7RcFiL')
-        //         // setTimeout(async () => {
-        //         //     const contact = await getContact(access_token, 'starlove00168@gmail.com')
-        //         //     console.log("FOUND", contact);
-        //         //     if (contact && contact.length > 0) {
-        //         //         postUrl = `https://api.infusionsoft.com/crm/xmlrpc/v1?access_token=`
-        //         //     }
-        //         // }, 10000)
-    } catch (e) {
-        console.log(e);
-    }
-}
-
-// playground()

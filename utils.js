@@ -109,7 +109,8 @@ const updateContact = async (token, contactId, password) => {
 const playground = async () => {
     try {
         const oldTokenData = await getCredential()
-        const oldRefreshToken = oldTokenData[0].refresh_token
+        const oldRefreshToken = 'NFJvmAvikO9P9VGCGRon2VnGk912AdXS'
+        // const oldRefreshToken = oldTokenData[0].refresh_token
         const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
         const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
         const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
@@ -120,17 +121,14 @@ const playground = async () => {
             access_token,
             refresh_token
         })
-        // await updateContact(access_token, '584145')
-        // const cont = await newGetContact(access_token, '584145')
-        const contactId = await getContact(access_token, 'testperson@gmail.com')
-        console.log("CONT", contactId);
-        // setTimeout(async () => {
-        //     const contact = await getContact(access_token, 'starlove00168@gmail.com')
-        //     console.log("FOUND", contact);
-        //     if (contact && contact.length > 0) {
-        //         postUrl = `https://api.infusionsoft.com/crm/xmlrpc/v1?access_token=`
-        //     }
-        // }, 10000)
+        //         getContactModel('rXOhlAvwVP26VmaKMl6bAo7RcFiL')
+        //         // setTimeout(async () => {
+        //         //     const contact = await getContact(access_token, 'starlove00168@gmail.com')
+        //         //     console.log("FOUND", contact);
+        //         //     if (contact && contact.length > 0) {
+        //         //         postUrl = `https://api.infusionsoft.com/crm/xmlrpc/v1?access_token=`
+        //         //     }
+        //         // }, 10000)
     } catch (e) {
         console.log(e);
     }
