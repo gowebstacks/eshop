@@ -64,6 +64,7 @@ app.get('/callback', async (req, res) => {
 
 app.post('/funnelData', async (req, res) => {
     // INCOMING CONTACT DATA FROM WEB FORM ON CLICKFUNNELS
+    console.log("REQ", req.body);
     const email = req.body.fields[0].value
     const password = req.body.fields[1].value
     console.log("EMAIL", email, '\n', 'PASSWORD', password);
