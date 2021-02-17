@@ -70,28 +70,31 @@ app.post('/funnelData', async (req, res) => {
     console.log("EMAIL", email, '\n', 'PASSWORD', password);
 
     try {
-        // RETRIEVE KEAP ACCESS TOKEN + REFRESH TOKEN FROM DB 
-        const oldTokenData = await getCredential()
-        const oldRefreshToken = oldTokenData[0].refresh_token
-        const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
-        const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
-        // USE OLD TOKENS TO GET NEW TOKENS AND UPDATE THE TOKENS IN DB
-        const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
-        const access_token = resData.data.access_token
-        const refresh_token = resData.data.refresh_token
-        console.log('LATEST REFRESH:', refresh_token);
-        await updateCredential(oldTokenData[0]._id, {
-            access_token,
-            refresh_token
-        })
-        // DELAY TO WAIT FOR INFUSIONSOFT TO FINISH CREATING/UPDATING CONTACT RECORD BEFORE LOOKING FOR CONTACT BY EMAIL VIA WEB FORM EMAIL VALUE
-        setTimeout(async () => {
-            let contactId = await getContact(access_token, email)
-            console.log("CONTACT", contactId);
-            if (contactId) {
-                updateContact(access_token, contactId, password)
-            }
-        }, 10000)
+        if (email) {
+
+            // RETRIEVE KEAP ACCESS TOKEN + REFRESH TOKEN FROM DB 
+            const oldTokenData = await getCredential()
+            const oldRefreshToken = oldTokenData[0].refresh_token
+            const data = `grant_type=refresh_token&refresh_token=${oldRefreshToken}`
+            const base64encoded = Buffer.from(`${process.env.KEAP_API_KEY}:${process.env.KEAP_SECRET}`).toString('base64')
+            // USE OLD TOKENS TO GET NEW TOKENS AND UPDATE THE TOKENS IN DB
+            const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
+            const access_token = resData.data.access_token
+            const refresh_token = resData.data.refresh_token
+            console.log('LATEST REFRESH:', refresh_token);
+            await updateCredential(oldTokenData[0]._id, {
+                access_token,
+                refresh_token
+            })
+            // DELAY TO WAIT FOR INFUSIONSOFT TO FINISH CREATING/UPDATING CONTACT RECORD BEFORE LOOKING FOR CONTACT BY EMAIL VIA WEB FORM EMAIL VALUE
+            setTimeout(async () => {
+                let contactId = await getContact(access_token, email)
+                if (contactId) {
+                    console.log("CONTACT", contactId);
+                    updateContact(access_token, contactId, password)
+                }
+            }, 10000)
+        }
     } catch (e) {
         console.log(e);
     }
