@@ -36,7 +36,8 @@ const getContact = async (token, email) => {
         if (res.data && res.data.contacts && res.data.contacts.length > 0) {
             return res.data.contacts[0].id
         } else {
-            return res.data
+            console.log(res.data);
+            return null
         }
     } catch (e) {
         console.log(e);

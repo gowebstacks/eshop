@@ -86,6 +86,7 @@ app.post('/funnelData', async (req, res) => {
         // DELAY TO WAIT FOR INFUSIONSOFT TO FINISH CREATING/UPDATING CONTACT RECORD BEFORE LOOKING FOR CONTACT BY EMAIL VIA WEB FORM EMAIL VALUE
         setTimeout(async () => {
             let contactId = await getContact(access_token, email)
+            console.log("CONTACT", contactId);
             if (contactId) {
                 updateContact(access_token, contactId, password)
             }
