@@ -5,7 +5,7 @@ require('dotenv').config()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const { getCredential, addCredential, updateCredential } = require('./db')
-const { getContact } = require('./utils')
+const { getContact, updateContact } = require('./utils')
 const app = express()
 app.use(bodyParser.json())
 app.use(cors())
@@ -42,13 +42,13 @@ app.get('/callback', async (req, res) => {
         const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'content-type': 'application/x-www-form-urlencoded' } })
         const access_token = resData.data.access_token
         const refresh_token = resData.data.refresh_token
-
+        // console.log("ACCESS", access_token);
+        // console.log("REFRESH", refresh_token);
         const cred = await getCredential()
         if (cred.length > 0) {
             await updateCredential(cred[0]._id, {
-                access_token: authResponse.token.access_token,
-                refresh_token: authResponse.token.refresh_token,
-                createdAt: authResponse.token.createdAt
+                access_token: access_token,
+                refresh_token: refresh_token,
             })
         } else {
             const newCreds = await addCredential({
@@ -66,8 +66,7 @@ app.post('/funnelData', async (req, res) => {
     // INCOMING CONTACT DATA FROM WEB FORM ON CLICKFUNNELS
     const email = req.body.fields[0].value
     const password = req.body.fields[1].value
-    console.log(email);
-    console.log(password);
+    console.log("EMAIL", email, '\n', 'PASSWORD', password);
 
     try {
         // RETRIEVE KEAP ACCESS TOKEN + REFRESH TOKEN FROM DB 
@@ -79,26 +78,27 @@ app.post('/funnelData', async (req, res) => {
         const resData = await axios.post(`https://api.infusionsoft.com/token`, data, { headers: { 'Authorization': `Basic ${base64encoded}`, 'content-type': 'application/x-www-form-urlencoded' } })
         const access_token = resData.data.access_token
         const refresh_token = resData.data.refresh_token
-        await updateCredential(cred[0]._id, {
+        console.log('LATEST REFRESH:', refresh_token);
+        await updateCredential(oldTokenData[0]._id, {
             access_token,
             refresh_token
         })
         // DELAY TO WAIT FOR INFUSIONSOFT TO FINISH CREATING/UPDATING CONTACT RECORD BEFORE LOOKING FOR CONTACT BY EMAIL VIA WEB FORM EMAIL VALUE
         setTimeout(async () => {
-            const contact = await getContact(access_token, 'starlove00168@gmail.com')
-            if (contact && contact.length > 0) {
-                console.log("FOUND CONTACT", contact);
+            let contactId = await getContact(access_token, email)
+            if (contactId) {
+                updateContact(access_token, contactId, password)
             }
         }, 10000)
     } catch (e) {
         console.log(e);
     }
+    res.status(200).send()
 })
 
 // THIS ENDPOINT IS TRIGGERE BY CREATE_CONTACT EVENTS IN CLICKFUNNEL WEBHOOKS
 app.post('/click_funnels', async (req, res) => {
     // console.log("PAYLOAD", req.body);
-    req.body.contact
 
     // const oldTokenData = await getCredential()
     // const oldRefreshToken = oldTokenData[0].refresh_token
