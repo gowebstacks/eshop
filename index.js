@@ -66,6 +66,7 @@ app.post('/funnelData', async (req, res) => {
     // INCOMING CONTACT DATA FROM WEB FORM ON CLICKFUNNELS
     const email = req.body.fields[0].value
     const password = req.body.fields[1].value
+    console.log("EMAIL", email, '\n', 'PASSWORD', password);
 
     try {
         // RETRIEVE KEAP ACCESS TOKEN + REFRESH TOKEN FROM DB 
